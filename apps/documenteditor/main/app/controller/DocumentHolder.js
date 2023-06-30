@@ -1555,7 +1555,7 @@ define([
             }
 
             
-            let oGlobalCoords = AscPDFEditor.private_getGlobalCoordsByPageCoords(obj._pagePos.x + obj._pagePos.w, obj._pagePos.y + obj._pagePos.h, obj._page, true);
+            let oGlobalCoords = AscPDF.GetGlobalCoordsByPageCoords(obj._pagePos.x + obj._pagePos.w, obj._pagePos.y + obj._pagePos.h, obj._page, true);
             
             menuContainer.css({left: oGlobalCoords.X, top : oGlobalCoords.Y});
             menuContainer.attr('data-value', 'prevent-canvas-click');
@@ -1594,7 +1594,7 @@ define([
         
         onShowFormsPDFActions: function(obj, x, y) {
             switch (obj.type) {
-                case AscPDFEditor.FIELD_TYPE.combobox:
+                case AscPDF.FIELD_TYPE.combobox:
                     this.onShowListActionsPDF(obj, x, y);
                     break;
             }
