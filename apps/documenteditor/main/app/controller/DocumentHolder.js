@@ -1594,7 +1594,7 @@ define([
         
         onShowFormsPDFActions: function(obj, x, y) {
             switch (obj.type) {
-                case AscPDF.FIELD_TYPE.combobox:
+                case AscPDF.FIELD_TYPES.combobox:
                     this.onShowListActionsPDF(obj, x, y);
                     break;
             }

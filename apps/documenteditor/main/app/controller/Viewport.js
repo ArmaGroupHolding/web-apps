@@ -135,7 +135,7 @@ define([
                 'id-view'  : 'editor_sdk',
                 'translate': this.getApplication().getController('Main').translationTable
             });
-
+            
             this.header   = this.createView('Common.Views.Header', {
                 headerCaption: 'Document Editor',
                 storeUsers: DE.getCollection('Common.Collections.Users')
