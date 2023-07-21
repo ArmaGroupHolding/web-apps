@@ -96,15 +96,22 @@ const routes = [
 ];
 
 
-const SettingsList = inject("storeAppOptions", "storeReview")(observer(props => {
+const SettingsList = inject("storeAppOptions", "storeReview", "storeDocumentInfo")(observer(props => {
     const { t } = useTranslation();
     const _t = t('Settings', {returnObjects: true});
     const appOptions = props.storeAppOptions;
+    const canProtect = appOptions.canProtect;
     const storeReview = props.storeReview;
     const displayMode = storeReview.displayMode;
-    const navbar = <Navbar title={_t.textSettings}>
-                    {!props.inPopover  && <NavRight><Link popupClose=".settings-popup">{_t.textDone}</Link></NavRight>}
-                    </Navbar>;
+    const docInfo = props.storeDocumentInfo;
+    const docTitle = docInfo.dataDoc.title;
+    const docExt = docInfo.dataDoc ? docInfo.dataDoc.fileType : '';
+    const isNotForm = docExt && docExt !== 'oform';
+    const navbar = 
+        <Navbar>
+            <div className="title" onClick={props.changeTitleHandler}>{docTitle}</div>
+            {!props.inPopover  && <NavRight><Link popupClose=".settings-popup">{_t.textDone}</Link></NavRight>}
+        </Navbar>;
 
     const onoptionclick = page => {
         if ( props.onOptionClick )
@@ -171,7 +178,7 @@ const SettingsList = inject("storeAppOptions", "storeReview")(observer(props => 
                             <Icon slot="media" icon="icon-search"></Icon>
                         </ListItem>
                     }
-                    {_isEdit &&
+                    {(_isEdit && canProtect) &&
                         <ListItem title={t('Settings.textProtection')} link="#" onClick={onoptionclick.bind(this, '/protection')}>
                             <Icon slot="media" icon="icon-protection"></Icon>
                         </ListItem>
@@ -210,10 +217,12 @@ const SettingsList = inject("storeAppOptions", "storeReview")(observer(props => 
                             <Icon slot="media" icon="icon-doc-setup"></Icon>
                         </ListItem>
                     }
-                    <ListItem title={_t.textApplicationSettings} link="#"
-                              onClick={onoptionclick.bind(this, "/application-settings/")}>
-                        <Icon slot="media" icon="icon-app-settings"></Icon>
-                    </ListItem>
+                    {isNotForm &&
+                        <ListItem title={_t.textApplicationSettings} link="#"
+                                onClick={onoptionclick.bind(this, "/application-settings/")}>
+                            <Icon slot="media" icon="icon-app-settings"></Icon>
+                        </ListItem>
+                    }
                     {_canDownload &&
                         <ListItem title={_t.textDownload} link="#" onClick={onoptionclick.bind(this, "/download/")}>
                             <Icon slot="media" icon="icon-download"></Icon>
@@ -237,7 +246,7 @@ const SettingsList = inject("storeAppOptions", "storeReview")(observer(props => 
                             <Icon slot="media" icon="icon-help"></Icon>
                         </ListItem>
                     }
-                    {_canAbout &&
+                    {(_canAbout && isNotForm) &&
                         <ListItem title={_t.textAbout} link="#" onClick={onoptionclick.bind(this, "/about/")}>
                             <Icon slot="media" icon="icon-about"></Icon>
                         </ListItem>
@@ -270,10 +279,10 @@ class SettingsView extends Component {
         return (
             show_popover ?
                 <Popover id="settings-popover" closeByOutsideClick={false} className="popover__titled" onPopoverClosed={() => this.props.closeOptions('settings')}>
-                    <SettingsList inPopover={true} onOptionClick={this.onoptionclick} closeOptions={this.props.closeOptions} openOptions={this.props.openOptions} style={{height: '410px'}} onChangeMobileView={this.props.onChangeMobileView} onPrint={this.props.onPrint} showHelp={this.props.showHelp} showFeedback={this.props.showFeedback} onOrthographyCheck={this.props.onOrthographyCheck} onDownloadOrigin={this.props.onDownloadOrigin} />
+                    <SettingsList inPopover={true} onOptionClick={this.onoptionclick} closeOptions={this.props.closeOptions} openOptions={this.props.openOptions} style={{height: '410px'}} onChangeMobileView={this.props.onChangeMobileView} onPrint={this.props.onPrint} showHelp={this.props.showHelp} showFeedback={this.props.showFeedback} onOrthographyCheck={this.props.onOrthographyCheck} onDownloadOrigin={this.props.onDownloadOrigin} changeTitleHandler={this.props.changeTitleHandler} />
                 </Popover> :
                 <Popup className="settings-popup" onPopupClosed={() => this.props.closeOptions('settings')}>
-                    <SettingsList onOptionClick={this.onoptionclick} closeOptions={this.props.closeOptions} openOptions={this.props.openOptions} onChangeMobileView={this.props.onChangeMobileView} onPrint={this.props.onPrint} showHelp={this.props.showHelp} showFeedback={this.props.showFeedback} onOrthographyCheck={this.props.onOrthographyCheck} onDownloadOrigin={this.props.onDownloadOrigin} />
+                    <SettingsList onOptionClick={this.onoptionclick} closeOptions={this.props.closeOptions} openOptions={this.props.openOptions} onChangeMobileView={this.props.onChangeMobileView} onPrint={this.props.onPrint} showHelp={this.props.showHelp} showFeedback={this.props.showFeedback} onOrthographyCheck={this.props.onOrthographyCheck} onDownloadOrigin={this.props.onDownloadOrigin} changeTitleHandler={this.props.changeTitleHandler} />
                 </Popup>
         )
     }

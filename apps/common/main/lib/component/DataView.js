@@ -127,6 +127,7 @@ define([
             me.dataHint = me.options.dataHint || '';
             me.dataHintDirection = me.options.dataHintDirection || '';
             me.dataHintOffset = me.options.dataHintOffset || '';
+            me.scaling = me.options.scaling;
 
             me.listenTo(me.model, 'change', this.model.get('skipRenderOnChange') ? me.onChange : me.render);
             me.listenTo(me.model, 'change:selected',    me.onSelectChange);
@@ -164,6 +165,17 @@ define([
             if (tip) {
                 if (tip.dontShow===undefined && el.is(':hover'))
                     tip.dontShow = true;
+            }
+
+            if (this.scaling !== false && el.find('.options__icon').length) {
+                el.attr('ratio', 'ratio');
+                this.applyScaling(Common.UI.Scaling.currentRatio());
+
+                el.on('app:scaling', _.bind(function (e, info) {
+                    if ( this.scaling != info.ratio ) {
+                        this.applyScaling(info.ratio);
+                    }
+                }, this));
             }
 
             this.trigger('change', this, this.model);
@@ -208,6 +220,24 @@ define([
             this.trigger('change', this, this.model);
 
             return this;
+        },
+
+        applyScaling: function (ratio) {
+            this.scaling = ratio;
+
+            if (ratio > 2) {
+                var el = this.$el || $(this.el),
+                    icon = el.find('.options__icon');
+                if (icon.length > 0) {
+                    if (!el.find('svg.icon').length) {
+                        var iconCls = icon.attr('class'),
+                            re_icon_name = /btn-[^\s]+/.exec(iconCls),
+                            icon_name = re_icon_name ? re_icon_name[0] : "null",
+                            svg_icon = '<svg class="icon"><use class="zoom-int" href="#%iconname"></use></svg>'.replace('%iconname', icon_name);
+                        icon.after(svg_icon);
+                    }
+                }
+            }
         }
     });
 
@@ -289,6 +319,10 @@ define([
             else
                 me.moveKeys = [Common.UI.Keys.UP, Common.UI.Keys.DOWN, Common.UI.Keys.LEFT, Common.UI.Keys.RIGHT];
 
+            if ( me.options.scaling === false) {
+                me.cls = me.options.cls + ' scaling-off';
+            }
+
             if (me.options.el)
                 me.render();
         },
@@ -329,7 +363,10 @@ define([
                 if (this.listenStoreEvents) {
                     this.listenTo(this.store, 'add',    this.onAddItem);
                     this.listenTo(this.store, 'reset',  this.onResetItems);
-                    this.groups && this.listenTo(this.groups, 'add',  this.onAddGroup);
+                    if (this.groups) {
+                        this.listenTo(this.groups, 'add',  this.onAddGroup);
+                        this.listenTo(this.groups, 'remove',  this.onRemoveGroup);
+                    }
                 }
                 this.onResetItems();
 
@@ -458,6 +495,7 @@ define([
             var view = new Common.UI.DataViewItem({
                 template: this.itemTemplate,
                 model: record,
+                scaling: this.options.scaling,
                 dataHint: this.itemDataHint,
                 dataHintDirection: this.itemDataHintDirection,
                 dataHintOffset: this.itemDataHintOffset
@@ -529,6 +567,7 @@ define([
                         this.trigger('item:add', this, view, record);
                 }
             }
+            this._layoutParams = undefined;
         },
 
         onAddGroup: function(group) {
@@ -558,6 +597,15 @@ define([
                     (innerDivs.length > 0) ? $(innerDivs[idx]).before(el) : innerEl.append(el);
                 }
             }
+        },
+
+        onRemoveGroup: function(group) {
+            var innerEl = $(this.el).find('.inner').addBack().filter('.inner');
+            if (innerEl) {
+                var div = innerEl.find('#' + group.get('id') + '.grouped-data');
+                div && div.remove();
+            }
+            this._layoutParams = undefined;
         },
 
         onResetItems: function() {
@@ -649,6 +697,7 @@ define([
             if (!this.isSuspendEvents) {
                 this.trigger('item:remove', this, view, record);
             }
+            this._layoutParams = undefined;
         },
 
         onClickItem: function(view, record, e) {
@@ -842,6 +891,7 @@ define([
                 this.pressedShift = false;
             if(e.keyCode == Common.UI.Keys.CTRL)
                 this.pressedCtrl = false;
+            this.trigger('item:keyup', this, e);
         },
 
         attachKeyEvents: function() {
@@ -894,19 +944,21 @@ define([
                             : this.parentMenu.cmpEl.find('[role=menu]'),
                 docH = Common.Utils.innerHeight()-10,
                 innerEl = $(this.el).find('.inner').addBack().filter('.inner'),
-                parent = innerEl.parent(),
-                margins =  parseInt(parent.css('margin-top')) + parseInt(parent.css('margin-bottom')) + parseInt(menuRoot.css('margin-top')),
-                paddings = parseInt(menuRoot.css('padding-top')) + parseInt(menuRoot.css('padding-bottom')),
+                // parent = innerEl.parent(),
+                // margins =  parseInt(parent.css('margin-top')) + parseInt(parent.css('margin-bottom')) + parseInt(menuRoot.css('margin-top')),
+                // paddings = parseInt(menuRoot.css('padding-top')) + parseInt(menuRoot.css('padding-bottom')),
                 menuH = menuRoot.outerHeight(),
+                innerH = innerEl.height(),
+                diff = Math.max(menuH - innerH, 0),
                 top = parseInt(menuRoot.css('top')),
                 props = {minScrollbarLength  : this.minScrollbarLength};
             this.scrollAlwaysVisible && (props.alwaysVisibleY = this.scrollAlwaysVisible);
 
             if (top + menuH > docH ) {
-                innerEl.css('max-height', (docH - top - paddings - margins) + 'px');
+                innerEl.css('max-height', (docH - top - diff) + 'px');
                 if (this.allowScrollbar) this.scroller.update(props);
-            } else if ( top + menuH < docH && innerEl.height() < this.options.restoreHeight ) {
-                innerEl.css('max-height', (Math.min(docH - top - paddings - margins, this.options.restoreHeight)) + 'px');
+            } else if ( top + menuH < docH && innerH < this.options.restoreHeight ) {
+                innerEl.css('max-height', (Math.min(docH - top - diff, this.options.restoreHeight)) + 'px');
                 if (this.allowScrollbar) this.scroller.update(props);
             }
         },
@@ -1794,6 +1846,7 @@ define([
                 first = 0;
             while (!this.dataViewItems[first].el.is(":visible")) { // if first elem is hidden
                 first++;
+                if (!this.dataViewItems[first]) return;
                 el = this.dataViewItems[first].el;
             }
 

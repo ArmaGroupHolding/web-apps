@@ -228,7 +228,6 @@ define([
                         Math.abs(size[0] - top) < 0.1 && Math.abs(size[1] - left) < 0.1 &&
                         Math.abs(size[2] - bottom) < 0.1 && Math.abs(size[3] - right) < 0.1) {
                         item = rec;
-                        break;
                     }
                 }
                 if (item)
@@ -520,7 +519,9 @@ define([
                     h: size ? size['H'] : undefined,
                     preset: size ? this.findPagePreset(size['W'], size['H']) : undefined
                 },
-                paperOrientation: size ? (size['H'] > size['W'] ? 'portrait' : 'landscape') : null
+                paperOrientation: size ? (size['H'] > size['W'] ? 'portrait' : 'landscape') : null,
+                copies: this.printSettings.spnCopies.getNumberValue() || 1,
+                sides: this.printSettings.cmbSides.getValue()
             });
 
             this.printSettings.menu.hide();

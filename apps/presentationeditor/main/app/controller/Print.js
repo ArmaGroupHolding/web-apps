@@ -31,7 +31,8 @@
  */
 define([
     'core',
-    'presentationeditor/main/app/view/FileMenuPanels'
+    'presentationeditor/main/app/view/FileMenuPanels',
+    'presentationeditor/main/app/view/HeaderFooterDialog'
 ], function () {
     'use strict';
 
@@ -56,7 +57,8 @@ define([
             this.addListeners({
                 'PrintWithPreview': {
                     'show': _.bind(this.onShowMainSettingsPrint, this),
-                    'render:after': _.bind(this.onAfterRender, this)
+                    'render:after': _.bind(this.onAfterRender, this),
+                    'openheader': _.bind(this.onOpenHeaderSettings, this)
                 }
             });
         },
@@ -302,7 +304,9 @@ define([
                     w: rec ? rec.size[0] : undefined,
                     h: rec ? rec.size[1] : undefined,
                     preset: rec ? rec.caption : undefined
-                }
+                },
+                copies: this.printSettings.spnCopies.getNumberValue() || 1,
+                sides: this.printSettings.cmbSides.getValue()
             });
 
             if ( print ) {
@@ -332,6 +336,24 @@ define([
                 this._paperSize = record.size;
                 this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage, this._paperSize);
             }
+        },
+
+        onOpenHeaderSettings: function () {
+            var me = this;
+            (new PE.Views.HeaderFooterDialog({
+                api: this.api,
+                lang: this.api.asc_getDefaultLanguage(),
+                props: this.api.asc_getHeaderFooterProperties(),
+                type: 1,
+                handler: function(result, value) {
+                    if (result == 'ok' || result == 'all') {
+                        if (me.api) {
+                            me.api.asc_setHeaderFooterProperties(value, result == 'all');
+                        }
+                    }
+                    Common.NotificationCenter.trigger('edit:complete', me.toolbar);
+                }
+            })).show();
         },
 
         SetDisabled: function() {

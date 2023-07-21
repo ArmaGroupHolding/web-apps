@@ -54,7 +54,7 @@ export class storeAppOptions {
         this.isProtected = value;
     }
 
-    typeProtection = null;
+    typeProtection;
     setTypeProtection(type) {
         this.typeProtection = type;
     }
@@ -64,10 +64,9 @@ export class storeAppOptions {
         this.isMobileView = !this.isMobileView;
     }
 
-
     isViewer = true;
-    changeViewerMode() {
-        this.isViewer = !this.isViewer;
+    changeViewerMode(value) {
+        this.isViewer = value;
     }
 
     canViewComments = false;
@@ -170,6 +169,7 @@ export class storeAppOptions {
         this.fileKey = document.key;
         const typeForm = /^(?:(oform))$/.exec(document.fileType); // can fill forms only in oform format
         this.canFillForms = this.canLicense && !!(typeForm && typeof typeForm[1] === 'string') && ((permissions.fillForms===undefined) ? this.isEdit : permissions.fillForms) && (this.config.mode !== 'view');
+        this.canProtect = permissions.protect !== false;
         this.isRestrictedEdit = !this.isEdit && (this.canComments || this.canFillForms) && isSupportEditFeature;
         if (this.isRestrictedEdit && this.canComments && this.canFillForms) // must be one restricted mode, priority for filling forms
             this.canComments = false;
@@ -196,6 +196,7 @@ export class storeAppOptions {
         this.canUseUserInfoPermissions && AscCommon.UserInfoParser.setUserInfoPermissions(permissions.userInfoGroups);
 
         this.canLiveView = !!params.asc_getLiveViewerSupport() && (this.config.mode === 'view') && !(type && typeof type[1] === 'string') && isSupportEditFeature;
+        this.isAnonymousSupport = !!Common.EditorApi.get().asc_isAnonymousSupport();
     }
     setCanViewReview (value) {
         this.canViewReview = value;
