@@ -1,16 +1,18 @@
-import React, { createContext } from 'react';
+import React, { createContext, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { f7 } from 'framework7-react';
 import { observer, inject } from "mobx-react";
 import { Device } from '../../../../../common/mobile/utils/device';
 import SettingsView from "../../view/settings/Settings";
 import { LocalStorage } from "../../../../../common/mobile/utils/LocalStorage.mjs";
+import { MainContext } from "../../page/main";
 
 export const SettingsContext = createContext();
 
 const SettingsController = props => {
     const storeDocumentInfo = props.storeDocumentInfo;
     const { t } = useTranslation();
+    const mainContext = useContext(MainContext);
 
     const closeModal = () => {
         if(Device.phone) {
@@ -133,6 +135,51 @@ const SettingsController = props => {
         }).open();
     };
 
+    useEffect(() => {
+        $$('li').on('click', `[data-action=feedback], [data-action=help], [data-action=print],
+                                [data-action=download], [data-action=check-orpho], [data-action=close-modal],
+                                [data-action=coauth], [data-action=navigation]`,
+            e => {
+                const action = $$(e.currentTarget).data('action');
+                if ( action === 'feedback' ) {
+                    showFeedback();
+                } else
+                if ( action === 'help' ) {
+                    showHelp();
+                } else
+                if ( action === 'print' ) {
+                    onPrint();
+                } else
+                if ( action === 'download' ) {
+                    onDownloadOrigin();
+                } else
+                if ( action === 'check-orpho' ) {
+                    onOrthographyCheck();
+                } else
+                if ( action === 'close-modal' ) {
+                    closeModal();
+                } else
+                if ( action === 'coauth' ) {
+                    closeModal();
+                    mainContext.openOptions('coauth');
+                } else
+                if ( action === 'navigation' ) {
+                    closeModal();
+                    mainContext.openOptions('navigation');
+                }
+        });
+
+        $$('.toggle').on('toggle:change', '[data-action=turn-mobile-view]', e => {
+            onChangeMobileView();
+            closeModal();
+            mainContext.openOptions('snackbar');
+        });
+        $$('[data-action=rename]').on('click', changeTitleHandler);
+
+        return () => {
+        }
+    }, []);
+
     const changeTitle = name => {
         const api = Common.EditorApi.get();
         const docInfo = storeDocumentInfo.docInfo;
@@ -146,16 +193,7 @@ const SettingsController = props => {
     };
 
     return (
-        <SettingsContext.Provider value={{
-            onPrint,
-            showHelp,
-            showFeedback,
-            onOrthographyCheck,
-            onDownloadOrigin,
-            onChangeMobileView,
-            changeTitleHandler,
-            closeModal
-        }}>
+        <SettingsContext.Provider value={{}}>
             <SettingsView />
         </SettingsContext.Provider>
     );

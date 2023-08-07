@@ -3,14 +3,10 @@ import { Page, Navbar, NavRight, Link, Icon, ListItem, List, Toggle } from 'fram
 import { Device } from "../../../../../common/mobile/utils/device";
 import { observer, inject } from "mobx-react";
 import { useTranslation } from 'react-i18next';
-import { SettingsContext } from '../../controller/settings/Settings';
-import { MainContext } from '../../page/main';
 
 const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo")(observer(props => {
     const { t } = useTranslation();
     const _t = t('Settings', {returnObjects: true});
-    const settingsContext = useContext(SettingsContext);
-    const mainContext = useContext(MainContext);
     const appOptions = props.storeAppOptions;
     const canProtect = appOptions.canProtect;
     const storeReview = props.storeReview;
@@ -21,14 +17,9 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
     const isNotForm = docExt && docExt !== 'oform';
     const navbar =
         <Navbar>
-            <div className="title" onClick={settingsContext.changeTitleHandler}>{docTitle}</div>
+            <div className="title" data-action={'rename'}>{docTitle}</div>
             {Device.phone && <NavRight><Link popupClose=".settings-popup">{_t.textDone}</Link></NavRight>}
         </Navbar>;
-
-    const onOpenOptions = name => {
-        settingsContext.closeModal();
-        mainContext.openOptions(name);
-    }
 
     // set mode
     const isViewer = appOptions.isViewer;
@@ -67,7 +58,7 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
             {navbar}
             <List>
                 {Device.phone &&
-                    <ListItem title={!_isEdit || isViewer ? _t.textFind : _t.textFindAndReplace} link='#' searchbarEnable='.searchbar' onClick={settingsContext.closeModal} className='no-indicator'>
+                    <ListItem data-action={'close-modal'} title={!_isEdit || isViewer ? _t.textFind : _t.textFindAndReplace} link='#' searchbarEnable='.searchbar' className='no-indicator'>
                         <Icon slot="media" icon="icon-search"></Icon>
                     </ListItem>
                 }
@@ -76,32 +67,24 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
                         <Icon slot="media" icon="icon-protection" />
                     </ListItem>
                 }
-                <ListItem title={t('Settings.textNavigation')} link={!Device.phone ? '/navigation' : '#'} onClick={() => {
-                    if(Device.phone) {
-                        onOpenOptions('navigation');
-                    } 
-                }}>
+                <ListItem title={t('Settings.textNavigation')} link={!Device.phone ? '/navigation' : '#'}
+                            data-action={Device.phone ? 'navigation' : null}>
                     <Icon slot="media" icon="icon-navigation"></Icon>
                 </ListItem>
                 {window.matchMedia("(max-width: 359px)").matches ?
-                    <ListItem title={_t.textCollaboration} link="#" onClick={() => {
-                        onOpenOptions('coauth');
-                    }} className='no-indicator'>
+                    <ListItem title={_t.textCollaboration} link="#" data-action={'coauth'} className='no-indicator'>
                         <Icon slot="media" icon="icon-collaboration"></Icon>
                     </ListItem>
                     : null}
                 {Device.sailfish && _isEdit &&
-                    <ListItem title={_t.textSpellcheck} onClick={() => {settingsContext.onOrthographyCheck()}} className='no-indicator' link="#">
+                    <ListItem data-action={'check-orpho'} title={_t.textSpellcheck} className='no-indicator' link="#">
                         <Icon slot="media" icon="icon-spellcheck"></Icon>
                     </ListItem>
                 }
                 {!isViewer && Device.phone &&
                     <ListItem title={t('Settings.textMobileView')}>
                         <Icon slot="media" icon="icon-mobile-view"></Icon>
-                        <Toggle checked={isMobileView} onToggleChange={() => {
-                            settingsContext.onChangeMobileView();
-                            onOpenOptions('snackbar');
-                        }} />
+                        <Toggle data-action={'turn-mobile-view'} checked={isMobileView} />
                     </ListItem>
                 }
                 {(_isEdit && !isViewer) &&
@@ -120,12 +103,12 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
                     </ListItem>
                 }
                 {_canDownloadOrigin &&
-                    <ListItem title={_t.textDownload} link="#" onClick={settingsContext.onDownloadOrigin} className='no-indicator'>
+                    <ListItem data-action={'download'} title={_t.textDownload} link="#" className='no-indicator'>
                         <Icon slot="media" icon="icon-download"></Icon>
                     </ListItem>
                 }
                 {_canPrint &&
-                    <ListItem title={_t.textPrint} onClick={settingsContext.onPrint} link='#' className='no-indicator'>
+                    <ListItem data-action={'print'} title={_t.textPrint} link='#' className='no-indicator'>
                         <Icon slot="media" icon="icon-print"></Icon>
                     </ListItem>
                 }
@@ -133,7 +116,7 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
                     <Icon slot="media" icon="icon-info"></Icon>
                 </ListItem>
                 {_canHelp &&
-                    <ListItem title={_t.textHelp} link="#" className='no-indicator' onClick={settingsContext.showHelp}>
+                    <ListItem data-action={'help'} title={_t.textHelp} link="#" className='no-indicator'>
                         <Icon slot="media" icon="icon-help"></Icon>
                     </ListItem>
                 }
@@ -143,7 +126,7 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
                     </ListItem>
                 }
                 {_canFeedback &&
-                    <ListItem title={t('Settings.textFeedback')} link="#" className='no-indicator' onClick={settingsContext.showFeedback}>
+                    <ListItem data-action={'feedback'} title={t('Settings.textFeedback')} link="#" className='no-indicator'>
                         <Icon slot="media" icon="icon-feedback"></Icon>
                     </ListItem>
                 }
