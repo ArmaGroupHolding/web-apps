@@ -365,48 +365,6 @@ define([
             return this;
         },
 
-        setDeveloperMode: function(mode, beta, version) {
-            if ( !this.$el.is(':visible') ) return;
-
-            if ((mode & Asc.c_oLicenseMode.Trial) || (mode & Asc.c_oLicenseMode.Developer)) {
-                if (!this.developerHint) {
-                    var str = '';
-                    if ((mode & Asc.c_oLicenseMode.Trial) && (mode & Asc.c_oLicenseMode.Developer))
-                        str = this.txtTrialDev;
-                    else if ((mode & Asc.c_oLicenseMode.Trial)!==0)
-                        str = this.txtTrial;
-                    else if ((mode & Asc.c_oLicenseMode.Developer)!==0)
-                        str = this.txtDeveloper;
-                    str = str.toUpperCase();
-                    this.developerHint = $('<div id="developer-hint">' + str + '</div>').appendTo(this.$el);
-                    this.devHeight = this.developerHint.outerHeight();
-                    !this.devHintInited && $(window).on('resize', _.bind(this.onWindowResize, this));
-                    this.devHintInited = true;
-                }
-            }
-            this.developerHint && this.developerHint.toggleClass('hidden', !((mode & Asc.c_oLicenseMode.Trial) || (mode & Asc.c_oLicenseMode.Developer)));
-
-            if (beta) {
-                if (!this.betaHint) {
-                    var style = (mode) ? 'style="margin-top: 4px;"' : '',
-                        arr = (version || '').split('.'),
-                        ver = '';
-                    (arr.length>0) && (ver += ('v. ' + arr[0]));
-                    (arr.length>1) && (ver += ('.' + arr[1]));
-                    this.betaHint = $('<div id="beta-hint"' + style + '>' + (ver + ' (beta)' ) + '</div>').appendTo(this.$el);
-                    this.betaHeight = this.betaHint.outerHeight();
-                    !this.devHintInited && $(window).on('resize', _.bind(this.onWindowResize, this));
-                    this.devHintInited = true;
-                }
-            }
-            this.betaHint && this.betaHint.toggleClass('hidden', !beta);
-
-            var btns = this.$el.find('button.btn-category:visible'),
-                lastbtn = (btns.length>0) ? $(btns[btns.length-1]) : null;
-            this.minDevPosition = (lastbtn) ? (lastbtn.offset().top - lastbtn.offsetParent().offset().top + lastbtn.height() + 20) : 20;
-            this.onWindowResize();
-        },
-
         setLimitMode: function() {
             if ( !this.$el.is(':visible') ) return;
 

@@ -223,7 +223,7 @@ define([
                 this.leftMenu.btnThumbnails.hide();
             }
 
-            (this.mode.trialMode || this.mode.isBeta) && this.leftMenu.setDeveloperMode(this.mode.trialMode, this.mode.isBeta, this.mode.buildVersion);
+            
             this.onChangeProtectDocument();
             Common.util.Shortcuts.resumeEvents();
             return this;
@@ -235,7 +235,7 @@ define([
                 this.leftMenu.setOptionsPanel('plugins', this.getApplication().getController('Common.Controllers.Plugins').getView('Common.Views.Plugins'));
             } else
                 this.leftMenu.btnPlugins.hide();
-            (this.mode.trialMode || this.mode.isBeta) && this.leftMenu.setDeveloperMode(this.mode.trialMode, this.mode.isBeta, this.mode.buildVersion);
+            
         },
 
         clickMenuFileItem: function(menu, action, isopts) {
